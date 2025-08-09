@@ -1,26 +1,43 @@
 import React, { useState } from 'react';
 import { Presentation } from '../types';
 import exportToPdf from '../services/export/pdfExporter';
+import exportToPptx from '../services/export/pptxExporter';
 
 interface ExportManagerProps {
   presentation: Presentation | null;
   onClose: () => void;
+  onExportAsPng: () => void;
 }
 
-export const ExportManager = ({ presentation, onClose }: ExportManagerProps) => {
-  const [isExporting, setIsExporting] = useState(false);
+export const ExportManager = ({ presentation, onClose, onExportAsPng }: ExportManagerProps) => {
+  const [isPdfExporting, setIsPdfExporting] = useState(false);
+  const [isPptxExporting, setIsPptxExporting] = useState(false);
 
   const handlePdfExport = async () => {
     if (!presentation) return;
-    setIsExporting(true);
+    setIsPdfExporting(true);
     try {
       await exportToPdf(presentation);
     } catch (e) {
       console.error("PDF Export failed", e);
       alert("PDF Export failed. See console for details.");
     } finally {
-      setIsExporting(false);
-      onClose(); // Close manager after export
+      setIsPdfExporting(false);
+      onClose();
+    }
+  };
+
+  const handlePptxExport = async () => {
+    if (!presentation) return;
+    setIsPptxExporting(true);
+    try {
+      await exportToPptx(presentation);
+    } catch (e) {
+      console.error("PPTX Export failed", e);
+      alert("PPTX Export failed. See console for details.");
+    } finally {
+      setIsPptxExporting(false);
+      onClose();
     }
   };
 
@@ -33,11 +50,13 @@ export const ExportManager = ({ presentation, onClose }: ExportManagerProps) => 
         </div>
         <p style={{marginTop: 0, color: '#666'}}>Choose your desired format.</p>
         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px'}}>
-          <button onClick={handlePdfExport} disabled={isExporting} style={buttonStyle}>
-            {isExporting ? 'Exporting PDF...' : 'Export as PDF'}
+          <button onClick={handlePdfExport} disabled={isPdfExporting} style={buttonStyle}>
+            {isPdfExporting ? 'Exporting PDF...' : 'Export as PDF'}
           </button>
-          <button disabled style={buttonStyle}>Export as PowerPoint (.pptx)</button>
-          <button disabled style={buttonStyle}>Export as Images (.zip)</button>
+          <button onClick={handlePptxExport} disabled={isPptxExporting} style={buttonStyle}>
+            {isPptxExporting ? 'Exporting PPTX...' : 'Export as PowerPoint (.pptx)'}
+          </button>
+          <button onClick={onExportAsPng} style={buttonStyle}>Export Current Slide as PNG</button>
         </div>
       </div>
     </div>

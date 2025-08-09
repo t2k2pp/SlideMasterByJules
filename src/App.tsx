@@ -5,7 +5,6 @@ import { EditorScreen } from './components/EditorScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { AIAssistant } from './components/AIAssistant';
 import { VideoAnalysisScreen } from './components/VideoAnalysisScreen';
-import { ExportManager } from './components/ExportManager';
 
 const samplePresentation: Presentation = {
   id: 'pres-1',
@@ -184,7 +183,9 @@ function App() {
             onUpdateLayer={updateLayerProperties}
             onOpenSettings={handleOpenSettings}
             onOpenAiAssistant={() => setAppState(prev => ({ ...prev, isAiAssistantOpen: true }))}
+            isExportManagerOpen={appState.isExportManagerOpen}
             onOpenExportManager={() => setAppState(prev => ({ ...prev, isExportManagerOpen: true }))}
+            onCloseExportManager={() => setAppState(prev => ({ ...prev, isExportManagerOpen: false }))}
           />;
         }
         return <div>Loading...</div>; // Or some other placeholder
@@ -206,7 +207,6 @@ function App() {
     <div className="slidemaster-app">
       {renderCurrentScreen()}
       {appState.isAiAssistantOpen && <AIAssistant onClose={() => setAppState(prev => ({ ...prev, isAiAssistantOpen: false }))} />}
-      {appState.isExportManagerOpen && <ExportManager presentation={appState.currentPresentation} onClose={() => setAppState(prev => ({...prev, isExportManagerOpen: false}))} />}
     </div>
   );
 }
