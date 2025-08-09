@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useApiKeys } from '../hooks/useApiKeys';
+import { useProviderConfig } from '../hooks/useProviderConfig';
 import { AIRouter } from '../services/ai/AIRouter';
 import { AIProviderType } from '../types';
 
@@ -17,7 +17,7 @@ export const AIAssistant = ({ onClose }: AIAssistantProps) => {
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
 
-  const { getApiKey } = useApiKeys();
+  const { getProviderConfig } = useProviderConfig();
 
   const availableProvidersForTask = useMemo(() => {
     const allProviders = Object.keys(AIRouter) as AIProviderType[];
@@ -39,8 +39,8 @@ export const AIAssistant = ({ onClose }: AIAssistantProps) => {
     setResult('');
     setIsLoading(true);
 
-    const apiKey = getApiKey(provider);
-    if (!apiKey) {
+    const config = getProviderConfig(provider);
+    if (!config.apiKey) {
       setError(`API key for ${provider} is not set. Please add it in Settings.`);
       setIsLoading(false);
       return;
@@ -49,10 +49,10 @@ export const AIAssistant = ({ onClose }: AIAssistantProps) => {
     try {
       const selectedProvider = AIRouter[provider];
       if (taskType === 'text') {
-        const response = await selectedProvider.generateText(prompt, apiKey);
+        const response = await selectedProvider.generateText(prompt, config);
         setResult(response.content);
       } else if (taskType === 'image' && selectedProvider.generateImage) {
-        const response = await selectedProvider.generateImage(prompt, apiKey);
+        const response = await selectedProvider.generateImage(prompt, config);
         setResult(response.imageUrl);
       } else {
         throw new Error(`Task '${taskType}' not supported by provider '${provider}'.`);
