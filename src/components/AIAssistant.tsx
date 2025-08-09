@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApiKeys } from '../hooks/useApiKeys';
 import { AIRouter } from '../services/ai/AIRouter';
 import { AIProviderType } from '../types';
+
+type TaskType = 'text' | 'image';
 
 interface AIAssistantProps {
   onClose: () => void;
@@ -10,11 +12,27 @@ interface AIAssistantProps {
 export const AIAssistant = ({ onClose }: AIAssistantProps) => {
   const [prompt, setPrompt] = useState('');
   const [provider, setProvider] = useState<AIProviderType>('gemini');
+  const [taskType, setTaskType] = useState<TaskType>('text');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
 
   const { getApiKey } = useApiKeys();
+
+  const availableProvidersForTask = useMemo(() => {
+    const allProviders = Object.keys(AIRouter) as AIProviderType[];
+    if (taskType === 'image') {
+      return allProviders.filter(p => AIRouter[p].generateImage);
+    }
+    return allProviders;
+  }, [taskType]);
+
+  // If current provider is not available for the selected task, switch to the first available one
+  React.useEffect(() => {
+    if (!availableProvidersForTask.includes(provider)) {
+      setProvider(availableProvidersForTask[0] || 'gemini');
+    }
+  }, [availableProvidersForTask, provider]);
 
   const handleGenerate = async () => {
     setError('');
@@ -29,12 +47,15 @@ export const AIAssistant = ({ onClose }: AIAssistantProps) => {
     }
 
     try {
-      // This is a simplified call; the router will need to be more dynamic
-      if (provider === 'gemini') {
-        const response = await AIRouter.gemini.generateText(prompt, apiKey);
+      const selectedProvider = AIRouter[provider];
+      if (taskType === 'text') {
+        const response = await selectedProvider.generateText(prompt, apiKey);
         setResult(response.content);
+      } else if (taskType === 'image' && selectedProvider.generateImage) {
+        const response = await selectedProvider.generateImage(prompt, apiKey);
+        setResult(response.imageUrl);
       } else {
-        setError(`${provider} provider is not implemented yet.`);
+        throw new Error(`Task '${taskType}' not supported by provider '${provider}'.`);
       }
     } catch (e: any) {
       setError(e.message || 'An unknown error occurred.');
@@ -50,22 +71,32 @@ export const AIAssistant = ({ onClose }: AIAssistantProps) => {
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
       </div>
       <div style={contentStyle}>
+        <div>
+          <label><input type="radio" name="task" value="text" checked={taskType === 'text'} onChange={() => setTaskType('text')} /> Text</label>
+          <label style={{marginLeft: '15px'}}><input type="radio" name="task" value="image" checked={taskType === 'image'} onChange={() => setTaskType('image')} /> Image</label>
+        </div>
         <select value={provider} onChange={e => setProvider(e.target.value as AIProviderType)} style={selectStyle}>
-          <option value="gemini">Gemini</option>
-          <option value="openai" disabled>OpenAI</option>
-          {/* Add other providers as they are implemented */}
+          {Object.keys(AIRouter).map(p => (
+            <option key={p} value={p} disabled={!availableProvidersForTask.includes(p as AIProviderType)}>
+              {p.charAt(0).toUpperCase() + p.slice(1)}
+            </option>
+          ))}
         </select>
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Enter your prompt here..."
+          placeholder={taskType === 'text' ? 'Enter your text prompt...' : 'Enter your image prompt...'}
           style={textareaStyle}
         />
         <button onClick={handleGenerate} disabled={isLoading || !prompt} style={buttonStyle}>
-          {isLoading ? 'Generating...' : 'Generate'}
+          {isLoading ? 'Generating...' : `Generate ${taskType.charAt(0).toUpperCase() + taskType.slice(1)}`}
         </button>
         {error && <div style={errorStyle}>{error}</div>}
-        {result && <div style={resultStyle}><pre>{result}</pre></div>}
+        {result && (
+          <div style={resultStyle}>
+            {taskType === 'text' ? <pre>{result}</pre> : <img src={result} alt="Generated" style={{maxWidth: '100%'}} />}
+          </div>
+        )}
       </div>
     </div>
   );
