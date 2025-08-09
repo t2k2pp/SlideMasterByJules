@@ -1,16 +1,16 @@
 import { geminiProvider } from './geminiProvider';
+import { openaiProvider } from './openaiProvider';
+import { claudeProvider } from './claudeProvider';
 // Import other providers as they are implemented
-// import { openaiProvider } from './openaiProvider';
 // import { azureProvider } from './azureProvider';
-// import { claudeProvider } from './claudeProvider';
 
 // For now, the router is a simple object that exposes the providers.
 // Later, it can contain logic to select the best provider for a task.
 export const AIRouter = {
   gemini: geminiProvider,
-  // openai: openaiProvider,
+  openai: openaiProvider,
+  claude: claudeProvider,
   // azure: azureProvider,
-  // claude: claudeProvider,
   // ...and so on
 };
 
