@@ -60,10 +60,14 @@ export interface TextLayer extends BaseLayer {
   type: 'text';
   content: string;
   fontSize: number;
-  textAlign: 'left' | 'center' | 'right' | 'justify';
-  color: string;
   fontFamily: string;
-  // ... other text properties
+  color: string;
+  textAlign: 'left' | 'center' | 'right' | 'justify';
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  letterSpacing?: number; // in px
+  lineHeight?: number; // multiplier e.g., 1.5
 }
 
 export interface ImageLayer extends BaseLayer {
