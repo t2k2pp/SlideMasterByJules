@@ -1,9 +1,9 @@
-import { generateSlidesFromMarkdown } from './manualGenerator';
-import { createLayer } from './layerFactory';
-import { Layer } from '../types';
+import { generateSlidesFromMarkdown } from './manualGenerator.ts';
+import { createLayer } from './layerFactory.ts';
+import { Layer } from '../types/index.ts';
 
 // Mock the layer factory to produce predictable IDs for snapshot testing
-jest.mock('./layerFactory', () => ({
+jest.mock('./layerFactory.ts', () => ({
   createLayer: jest.fn((type, template, content) => ({
     id: `mock-id-${type}-${content}`, // Make ID more predictable
     type,
