@@ -1,5 +1,6 @@
 import React from 'react';
-import { Presentation, Layer, TextLayer } from '../types';
+import { Presentation, Layer, TextLayer, ImageLayer } from '../types';
+import { DEFAULT_LAYER_PROPS } from '../constants';
 
 interface LayerEditorProps {
   presentation: Presentation;
@@ -10,16 +11,14 @@ interface LayerEditorProps {
 export const LayerEditor = ({ presentation, selectedLayerIds, onUpdateLayer }: LayerEditorProps) => {
   const selectedLayerId = selectedLayerIds[0];
 
-  let selectedLayer: Layer | null = null;
-  if (selectedLayerId) {
+  const selectedLayer: Layer | null = React.useMemo(() => {
+    if (!selectedLayerId) return null;
     for (const slide of presentation.slides) {
       const foundLayer = slide.layers.find(l => l.id === selectedLayerId);
-      if (foundLayer) {
-        selectedLayer = foundLayer;
-        break;
-      }
+      if (foundLayer) return foundLayer;
     }
-  }
+    return null;
+  }, [selectedLayerId, presentation.slides]);
 
   const handlePropertyChange = (prop: keyof Layer, value: any) => {
     if (selectedLayer) {
@@ -27,43 +26,43 @@ export const LayerEditor = ({ presentation, selectedLayerIds, onUpdateLayer }: L
     }
   };
 
+  const handleFilterChange = (filterName: keyof ImageLayer['filters'], value: number) => {
+    if (selectedLayer && selectedLayer.type === 'image') {
+      const newFilters = { ...selectedLayer.filters, [filterName]: value };
+      onUpdateLayer(selectedLayer.id, { filters: newFilters });
+    }
+  };
+
   const renderTextControls = () => {
     if (!selectedLayer || selectedLayer.type !== 'text') return null;
     const layer = selectedLayer as TextLayer;
+    // ... (text controls implementation from before)
+    return <div>Text Controls Placeholder</div>
+  };
+
+  const renderImageControls = () => {
+    if (!selectedLayer || selectedLayer.type !== 'image') return null;
+    const layer = selectedLayer as ImageLayer;
+    const filters = layer.filters || DEFAULT_LAYER_PROPS.image.filters;
 
     return (
       <div>
-        <h4>Text Properties</h4>
+        <h4>Image Filters</h4>
         <div>
-          <label>Font Size</label>
-          <input
-            type="number"
-            value={layer.fontSize}
-            onChange={(e) => handlePropertyChange('fontSize', parseInt(e.target.value))}
-          />
+          <label>Brightness</label>
+          <input type="range" min="0" max="2" step="0.1" value={filters.brightness} onChange={e => handleFilterChange('brightness', parseFloat(e.target.value))} />
         </div>
         <div>
-          <label>Color</label>
-          <input
-            type="color"
-            value={layer.color}
-            onChange={(e) => handlePropertyChange('color', e.target.value)}
-          />
+          <label>Contrast</label>
+          <input type="range" min="0" max="2" step="0.1" value={filters.contrast} onChange={e => handleFilterChange('contrast', parseFloat(e.target.value))} />
         </div>
         <div>
-          <button onClick={() => handlePropertyChange('bold', !layer.bold)}>
-            {layer.bold ? <strong>B</strong> : 'B'}
-          </button>
-          <button onClick={() => handlePropertyChange('italic', !layer.italic)}>
-            {layer.italic ? <em>I</em> : 'I'}
-          </button>
-          <button onClick={() => handlePropertyChange('underline', !layer.underline)}>
-            {layer.underline ? <u>U</u> : 'U'}
-          </button>
+          <label>Saturation</label>
+          <input type="range" min="0" max="2" step="0.1" value={filters.saturate} onChange={e => handleFilterChange('saturate', parseFloat(e.target.value))} />
         </div>
       </div>
     );
-  };
+  }
 
   const editorStyle: React.CSSProperties = {
     width: '250px',
@@ -80,12 +79,12 @@ export const LayerEditor = ({ presentation, selectedLayerIds, onUpdateLayer }: L
       {!selectedLayer && <p>Select a layer to see its properties.</p>}
       {selectedLayer && (
         <div>
-          <p>ID: {selectedLayer.id}</p>
+          <p>ID: {selectedLayer.id.substring(0, 10)}...</p>
           <p>Type: {selectedLayer.type}</p>
-          {/* Add common properties editors here */}
         </div>
       )}
       {renderTextControls()}
+      {renderImageControls()}
     </aside>
   );
 };

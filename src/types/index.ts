@@ -75,7 +75,13 @@ export interface ImageLayer extends BaseLayer {
   src: string; // base64 or url
   prompt?: string;
   objectFit: ObjectFit;
-  // ... other image properties
+  filters: {
+    brightness: number; // e.g., 1 = 100%
+    contrast: number;   // e.g., 1 = 100%
+    saturate: number;   // e.g., 1 = 100%
+    grayscale: number;  // 0 to 1
+    sepia: number;      // 0 to 1
+  };
 }
 
 export interface ShapeLayer extends BaseLayer {

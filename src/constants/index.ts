@@ -22,6 +22,13 @@ export const DEFAULT_LAYER_PROPS: DefaultLayerProps = {
   image: {
     objectFit: 'contain' as const,
     prompt: 'A beautiful, high-quality image',
+    filters: {
+      brightness: 1,
+      contrast: 1,
+      saturate: 1,
+      grayscale: 0,
+      sepia: 0,
+    },
   },
   shape: {
     shapeType: 'rectangle' as const,

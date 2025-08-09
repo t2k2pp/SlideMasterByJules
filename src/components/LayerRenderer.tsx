@@ -1,5 +1,6 @@
 import React from 'react';
 import { Layer, TextLayer, ShapeLayer, ImageLayer } from '../types';
+import { DEFAULT_LAYER_PROPS } from '../constants';
 
 interface LayerRendererProps {
   layer: Layer;
@@ -42,8 +43,28 @@ export const LayerRenderer = ({ layer }: LayerRendererProps) => {
           }} />
         );
       case 'image':
-        // Placeholder for image rendering
-        return <div style={{width: '100%', height: '100%', backgroundColor: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Image Layer</div>;
+        const imageLayer = layer as ImageLayer;
+        const filters = imageLayer.filters || DEFAULT_LAYER_PROPS.image.filters;
+        const filterString = `
+          brightness(${filters.brightness})
+          contrast(${filters.contrast})
+          saturate(${filters.saturate})
+          grayscale(${filters.grayscale})
+          sepia(${filters.sepia})
+        `.trim();
+
+        return (
+          <img
+            src={imageLayer.src}
+            alt={imageLayer.prompt || 'slide image'}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: imageLayer.objectFit,
+              filter: filterString,
+            }}
+          />
+        );
       default:
         return null;
     }
