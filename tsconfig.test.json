@@ -2,6 +2,7 @@
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "verbatimModuleSyntax": false,
+    "isolatedModules": true,
     "noUnusedLocals": false, // Often useful for tests
     "noUnusedParameters": false
   },
