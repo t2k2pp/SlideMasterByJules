@@ -76,7 +76,11 @@ export const EditorScreen = ({
           onSelectLayer={onSelectLayer}
           onUpdateLayer={onUpdateLayer}
         />
-        <LayerEditor />
+        <LayerEditor
+          presentation={presentation}
+          selectedLayerIds={selectedLayerIds}
+          onUpdateLayer={onUpdateLayer}
+        />
       </div>
       {isExportManagerOpen && (
         <ExportManager
