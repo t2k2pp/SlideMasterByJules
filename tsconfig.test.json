@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "verbatimModuleSyntax": false,
+    "noUnusedLocals": false, // Often useful for tests
+    "noUnusedParameters": false
+  },
+  "include": [
+    "src"
+  ]
+}
