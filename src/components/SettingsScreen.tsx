@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useApiKeys } from '../hooks/useApiKeys';
+import { useProviderConfig, ProviderConfig } from '../hooks/useProviderConfig';
 import { AIProviderType } from '../types';
 
 interface SettingsScreenProps {
@@ -7,30 +7,32 @@ interface SettingsScreenProps {
 }
 
 const PROVIDERS: AIProviderType[] = ['gemini', 'openai', 'azure', 'claude', 'lmstudio', 'fooocus'];
+const PROVIDERS_NEEDING_ENDPOINT: AIProviderType[] = ['azure', 'lmstudio', 'fooocus'];
 
 export const SettingsScreen = ({ onClose }: SettingsScreenProps) => {
-  const { getApiKey, setApiKey } = useApiKeys();
-  const [keys, setKeys] = useState<Record<AIProviderType, string>>({
-    gemini: '', openai: '', azure: '', claude: '', lmstudio: '', fooocus: ''
-  });
+  const { getProviderConfig, setProviderConfig } = useProviderConfig();
+  const [configs, setConfigs] = useState<Record<AIProviderType, ProviderConfig>>({} as any);
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
-    const existingKeys: Record<AIProviderType, string> = {} as any;
+    const existingConfigs: Record<AIProviderType, ProviderConfig> = {} as any;
     for (const provider of PROVIDERS) {
-      existingKeys[provider] = getApiKey(provider);
+      existingConfigs[provider] = getProviderConfig(provider);
     }
-    setKeys(existingKeys);
-  }, [getApiKey]);
+    setConfigs(existingConfigs);
+  }, [getProviderConfig]);
 
-  const handleInputChange = (provider: AIProviderType, value: string) => {
-    setKeys(prevKeys => ({ ...prevKeys, [provider]: value }));
+  const handleInputChange = (provider: AIProviderType, field: keyof ProviderConfig, value: string) => {
+    setConfigs(prevConfigs => ({
+      ...prevConfigs,
+      [provider]: { ...prevConfigs[provider], [field]: value }
+    }));
     setIsDirty(true);
   };
 
   const handleSave = () => {
     for (const provider of PROVIDERS) {
-      setApiKey(provider, keys[provider]);
+      setProviderConfig(provider, configs[provider]);
     }
     setIsDirty(false);
     // A better feedback mechanism will be added later
@@ -63,10 +65,25 @@ export const SettingsScreen = ({ onClose }: SettingsScreenProps) => {
               id={`apikey-${provider}`}
               type="password"
               placeholder={`Enter your ${provider} API key`}
-              value={keys[provider]}
-              onChange={(e) => handleInputChange(provider, e.target.value)}
+              value={configs[provider]?.apiKey || ''}
+              onChange={(e) => handleInputChange(provider, 'apiKey', e.target.value)}
               style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }}
             />
+            {PROVIDERS_NEEDING_ENDPOINT.includes(provider) && (
+              <>
+                <label htmlFor={`endpoint-${provider}`} style={{ textTransform: 'capitalize', display: 'block', marginBottom: '5px', fontWeight: 500, marginTop: '10px' }}>
+                  {provider} Endpoint URL
+                </label>
+                <input
+                  id={`endpoint-${provider}`}
+                  type="text"
+                  placeholder={`Enter the endpoint for ${provider}`}
+                  value={configs[provider]?.endpoint || ''}
+                  onChange={(e) => handleInputChange(provider, 'endpoint', e.target.value)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+                />
+              </>
+            )}
           </div>
         ))}
       </div>
