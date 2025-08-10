@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { extractFramesFromVideo } from '../utils/videoFrameExtractor';
 import { analyzeVideoWithVision } from '../services/ai/geminiProvider';
-import { useApiKeys } from '../hooks/useApiKeys';
+import { useProviderConfig } from '../hooks/useProviderConfig';
 import { generateSlidesFromMarkdown } from '../utils/manualGenerator';
 import { Slide } from '../types';
 
@@ -17,7 +17,7 @@ export const VideoAnalysisScreen = ({ onClose, onCreatePresentation }: VideoAnal
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState('');
   const [analysisResult, setAnalysisResult] = useState('');
-  const { getApiKey } = useApiKeys();
+  const { getProviderConfig } = useProviderConfig();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,8 +52,8 @@ export const VideoAnalysisScreen = ({ onClose, onCreatePresentation }: VideoAnal
       setError('Please extract frames before analyzing.');
       return;
     }
-    const apiKey = getApiKey('gemini');
-    if (!apiKey) {
+    const config = getProviderConfig('gemini');
+    if (!config.apiKey) {
       setError('Gemini API Key is not set. Please add it in Settings.');
       return;
     }
@@ -65,7 +65,7 @@ export const VideoAnalysisScreen = ({ onClose, onCreatePresentation }: VideoAnal
     const prompt = "You are an expert technical writer. Analyze the following sequence of screen captures from a video tutorial. Create a step-by-step instruction manual in Markdown format. For each step, provide a clear heading, a concise description of the action being performed, and any important details. Structure your output as valid Markdown.";
 
     try {
-      const result = await analyzeVideoWithVision(prompt, apiKey, frames);
+      const result = await analyzeVideoWithVision(prompt, config.apiKey, frames);
       setAnalysisResult(result.content);
     } catch (e: any) {
       setError(e.message || 'Failed to analyze video with AI.');
